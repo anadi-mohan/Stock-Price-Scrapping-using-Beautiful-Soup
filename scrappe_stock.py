@@ -5,7 +5,14 @@ import csv
 from time import localtime, strftime
 import matplotlib.pyplot as plt
 
-csv_file = open('YES_BANK_STOCK_PRICES.csv','w')
+stock_name = input('Enter the name of stock')
+url = requests.get('https://finance.yahoo.com/quote/'+stock_name+'.NS?p='+stock_name+'.NS&.tsrc=fin-srch').text
+soup = BeautifulSoup(url, 'lxml') 
+block = soup.find('div',class_ = 'D(ib) Mend(20px)')
+if(block == None):
+    print('No such stock found\nPlease Enter valid Stock name')
+    exit(0)
+csv_file = open(stock_name+'.csv','w')
 csv_writer = csv.writer(csv_file)
 
 csv_writer.writerow(['Time Stamp','Stock Prices'])
@@ -14,14 +21,16 @@ start_sec = localtime().tm_min*60 + localtime().tm_sec
 xdata = []
 ydata = []
 plt.show()
+plt.title(stock_name)
 
+ylim=float(block.find('span').text)
 axes = plt.gca()
-axes.set_xlim(0,80)
-axes.set_ylim(10,15)
+axes.set_xlim(0,400)
+axes.set_ylim(ylim-50,ylim+50)
 line, = axes.plot(xdata, ydata, 'b-')
 
 def fun():
-    url = requests.get('https://finance.yahoo.com/quote/YESBANK.NS?p=YESBANK.NS&.tsrc=fin-srch').text
+    url = requests.get('https://finance.yahoo.com/quote/'+stock_name+'.NS?p='+stock_name+'.NS&.tsrc=fin-srch').text
     soup = BeautifulSoup(url, 'lxml') 
     block = soup.find('div',class_ = 'D(ib) Mend(20px)')
 
@@ -36,7 +45,7 @@ def fun():
     plt.pause(1e-17)
     time.sleep(0.1)
 
-for _ in range(60):
+for _ in range(200):
     fun()
 
 end_sec =localtime().tm_min*60 + localtime().tm_sec
